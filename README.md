@@ -1,10 +1,15 @@
 # PolarBEVDet: Exploring Polar Representation for Multi-View 3D Object Detection in Bird's-Eye-View
 
 ## News
+- **[2025/06/23]** We add support for the occupancy prediction task
 - **[2025/06/23]** We add support for Waymo dataset
 - **[2025/01/23]** We release the code and pretrained weights for NuScenes dataset
 - **[2024/12/04]** PolarBEVDet is on [Arxiv](https://arxiv.org/abs/2408.16200).
 
+## Getting Started
+- [Installation](docs/install.md)
+- [Data Preparation](docs/prepare_dataset.md)
+- [Train and Eval](docs/train_and_eval.md)
 
 ## Abstract
 Multi-view 3D object detection built upon the Lift-Splat-Shoot (LSS) mechanism provides an economical and
@@ -40,16 +45,15 @@ consistent performance improvement.
 
 Regrettably, we are unable to provide the model weights due to [Waymo Dataset License Agreement](https://waymo.com/open/terms/)
 
+### results on Occ3D-nuScenes valid set:
+| Setting  | mIoU | RayIoU |                                     Weights                                      |
+|----------|:----:|:------:|:--------------------------------------------------------------------------------:|
+| [r50_704x256_24e](projects/configs/polarbevdet_occ/r50_704x256_24e.py) | 33.7 |  39.4  | [gdrive](https://drive.google.com/file/d/1rcTPX5cKFJthOFuZ73WA0OuSc_geMaD7/view) |
 
-## Getting Started
+## Visualization
+![arch](figs/vis.png)
 
-- [Installation](docs/install.md)
-
-- [Data Preparation](docs/prepare_dataset.md)
-
-- [Train and Eval](docs/train_and_eval.md)
-
-## Acknowledgements
+## Acknowledgement
 
 Many thanks to these excellent open-source projects:
 

@@ -5,7 +5,7 @@ from nuscenes import NuScenes
 from nuscenes.utils.data_classes import Box
 from pyquaternion import Quaternion
 from tools.data_converter import nuscenes_converter as nuscenes_converter
-from .add_2d_info import add_ann_2d_info
+from add_2d_info import add_ann_2d_info
 
 map_name_from_general_to_detection = {
     'human.pedestrian.adult': 'pedestrian',
@@ -130,7 +130,7 @@ def add_ann_adj_info(extra_tag):
             scene = nuscenes.get('scene', sample['scene_token'])
             dataset['infos'][id]['scene_name'] = scene['name']
             dataset['infos'][id]['occ_path'] = \
-                './gts/%s/%s' % (scene['name'], info['token'])
+                './data/nuscenes/gts/%s/%s' % (scene['name'], info['token'])
         with open('%s/%s_infos_%s.pkl' % (dataroot, extra_tag, set),
                   'wb') as fid:
             pickle.dump(dataset, fid)
@@ -142,12 +142,12 @@ if __name__ == '__main__':
     train_version = f'{version}-trainval'
     root_path = 'data/nuscenes'
     extra_tag = 'nuscenes'
-    nuscenes_data_prep(
-        root_path=root_path,
-        info_prefix=extra_tag,
-        version=train_version,
-        max_sweeps=10)
+    # nuscenes_data_prep(
+    #     root_path=root_path,
+    #     info_prefix=extra_tag,
+    #     version=train_version,
+    #     max_sweeps=10)
 
     print('add_ann_infos')
     add_ann_adj_info(extra_tag)
-    add_ann_2d_info(extra_tag)
+    # add_ann_2d_info(extra_tag)
