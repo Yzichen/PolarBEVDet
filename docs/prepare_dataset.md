@@ -18,6 +18,19 @@ data/nuscenes
 ├── v1.0-test
 └── v1.0-trainval
 ```
+4. For Occupancy Prediction task, download (only) the 'gts' from [CVPR2023-3D-Occupancy-Prediction](https://github.com/CVPR2023-3D-Occupancy-Prediction/CVPR2023-3D-Occupancy-Prediction) and arrange the folder as:
+```
+data/nuscenes
+├── maps
+├── nuscenes_infos_test.pkl
+├── nuscenes_infos_train.pkl
+├── nuscenes_infos_val.pkl
+├── samples
+├── sweeps
+├── gts (new)
+├── v1.0-test
+└── v1.0-trainval
+```
 
 ## Waymo
 1. Download Waymo open dataset V1.4.1 [HERE](https://waymo.com/open/download/) and its data split [HERE](https://drive.google.com/drive/folders/18BVuF_RYJF0NjZpt8SnfzANiakoRMf0o?usp=sharing). Then put `.tfrecord` files into corresponding folders in `data/waymo/waymo_format/` and put the data split `.txt` files 
