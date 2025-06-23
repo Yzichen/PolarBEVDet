@@ -134,18 +134,20 @@ class PolarCenterPointBBoxCoder(BaseBBoxCoder):
         Returns:
 
         """
-        azimuth, dis, z, dx, dy, dz, azimu_rot, v_radius, v_azimuth = torch.split(polar_boxes,
-                                                                                 split_size_or_sections=1, dim=-1)
+        azimuth, dis, z, dx, dy, dz, azimu_rot = torch.split(polar_boxes[..., :7], split_size_or_sections=1, dim=-1)
         x = dis * torch.cos(azimuth)
         y = dis * torch.sin(azimuth)
         rot = azimu_rot + azimuth
         rot = self.limit_period(rot, 0.5, 2*torch.pi)
+        cart_boxes = torch.cat([x, y, z, dx, dy, dz, rot], dim=-1)
 
-        v_abs = torch.sqrt(v_azimuth ** 2 + v_radius ** 2)
-        v_angle = azimuth + torch.atan2(v_azimuth, v_radius)
-        vx = v_abs * torch.cos(v_angle)
-        vy = v_abs * torch.sin(v_angle)
-        cart_boxes = torch.cat([x, y, z, dx, dy, dz, rot, vx, vy], dim=-1)
+        if polar_boxes.shape[-1] > 7:
+            v_radius, v_azimuth = torch.split(polar_boxes[..., 7:], split_size_or_sections=1, dim=-1)
+            v_abs = torch.sqrt(v_azimuth ** 2 + v_radius ** 2)
+            v_angle = azimuth + torch.atan2(v_azimuth, v_radius)
+            vx = v_abs * torch.cos(v_angle)
+            vy = v_abs * torch.sin(v_angle)
+            cart_boxes = torch.cat([cart_boxes, vx, vy], dim=-1)
 
         return cart_boxes
 

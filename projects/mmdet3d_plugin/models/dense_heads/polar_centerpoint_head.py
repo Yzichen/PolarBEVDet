@@ -174,6 +174,7 @@ class Polar_CenterHead(BaseModule):
                      type='SeparateHead', init_bias=-2.19, final_kernel=3),
                  share_conv_channel=64,
                  num_heatmap_convs=2,
+                 code_weights=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
                  conv_cfg=dict(type='Conv2d'),
                  norm_cfg=dict(type='BN2d'),
                  bias='auto',
@@ -222,7 +223,7 @@ class Polar_CenterHead(BaseModule):
         self.task_specific = task_specific
         self.align_camera_center = align_camera_center
 
-        self.code_weights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        self.code_weights = code_weights
 
     def forward_single(self, x):
         """Forward function for CenterPoint.
@@ -344,16 +345,19 @@ class Polar_CenterHead(BaseModule):
         Returns:
             polar_gt_bboxes_3d: (N_gt, 9)
         """
-        x, y, z, dx, dy, dz, rot, vx, vy = torch.split(gt_bboxes_3d, split_size_or_sections=1, dim=-1)
+        x, y, z, dx, dy, dz, rot = torch.split(gt_bboxes_3d[..., :7], split_size_or_sections=1, dim=-1)
         azimuth = torch.atan2(y, x)
         dis = torch.sqrt(x ** 2 + y ** 2)
         azim_rot = rot - azimuth
+        polar_gt_bboxes_3d = torch.cat([azimuth, dis, z, dx, dy, dz, azim_rot], dim=-1)
 
-        v_abs = torch.sqrt(vx ** 2 + vy ** 2)
-        v_angle = torch.atan2(vy, vx)
-        v_azimuth = v_abs * torch.sin(v_angle - azimuth)
-        v_radius = v_abs * torch.cos(v_angle - azimuth)
-        polar_gt_bboxes_3d = torch.cat([azimuth, dis, z, dx, dy, dz, azim_rot, v_radius, v_azimuth], dim=-1)
+        if self.with_velocity:
+            vx, vy = torch.split(gt_bboxes_3d[..., 7:], split_size_or_sections=1, dim=-1)
+            v_abs = torch.sqrt(vx ** 2 + vy ** 2)
+            v_angle = torch.atan2(vy, vx)
+            v_azimuth = v_abs * torch.sin(v_angle - azimuth)
+            v_radius = v_abs * torch.cos(v_angle - azimuth)
+            polar_gt_bboxes_3d = torch.cat([polar_gt_bboxes_3d, v_radius, v_azimuth], dim=-1)
 
         return polar_gt_bboxes_3d
 
@@ -439,7 +443,7 @@ class Polar_CenterHead(BaseModule):
                 # (azimuth, dis, z, dx, dy, dz, azim_rot, azim_vx, azim_vy)
                 gt_bboxes_3d_polar = self.cart2polar(cur_gt_box).squeeze()      # (9, )
 
-                corners = LiDARInstance3DBoxes(cur_gt_box, box_dim=9).corners  # (1, 8, 3)
+                corners = LiDARInstance3DBoxes(cur_gt_box, box_dim=9 if self.with_velocity else 7).corners  # (1, 8, 3)
                 bottom_corners_bev = corners[:, [0, 3, 7, 4], :2]  # (1, 4, 2)   2:(x, y)
                 rhos = torch.norm(bottom_corners_bev, dim=-1)  # (1, 4)
                 azs = torch.atan2(bottom_corners_bev[..., 1], bottom_corners_bev[..., 0])  # (1, 4)
@@ -573,10 +577,12 @@ class Polar_CenterHead(BaseModule):
                     preds_dict[0]['height'],
                     preds_dict[0]['dim'],
                     preds_dict[0]['rot'],
-                    preds_dict[0]['vel'],
                 ),
                 dim=1,
-            )   # (B, 10, H, W)    10: (tx, ty, z, log(dx), log(dy), log(dz), sin(azim_rot), cos(azim_rot), azim_vx, azim_vy)
+            )
+            if self.with_velocity:
+                # (B, 10, H, W)    10: (tx, ty, z, log(dx), log(dy), log(dz), sin(azim_rot), cos(azim_rot), azim_vx, azim_vy)
+                preds_dict[0]['anno_box'] = torch.cat((preds_dict[0]['anno_box'], preds_dict[0]['vel']), dim=1)
 
             # Regression loss for dimension, offset, height, rotation
             num = masks[task_id].float().sum()
@@ -593,8 +599,12 @@ class Polar_CenterHead(BaseModule):
 
             bbox_weights = mask * mask.new_tensor(self.code_weights)
             if self.task_specific:
-                name_list = ['xy', 'z', 'whl', 'yaw', 'vel']
-                clip_index = [0, 2, 3, 6, 8, 10]
+                if self.with_velocity:
+                    name_list = ['xy', 'z', 'whl', 'yaw', 'vel']
+                    clip_index = [0, 2, 3, 6, 8, 10]
+                else:
+                    name_list = ['xy', 'z', 'whl', 'yaw']
+                    clip_index = [0, 2, 3, 6, 8]
                 for reg_task_id in range(len(name_list)):
                     pred_tmp = pred[..., clip_index[reg_task_id]:clip_index[reg_task_id + 1]]    # (B, max_objs, K)
                     target_box_tmp = target_box[..., clip_index[reg_task_id]:clip_index[reg_task_id + 1]]    # (B, max_objs, K)

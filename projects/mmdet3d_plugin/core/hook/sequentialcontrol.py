@@ -9,24 +9,27 @@ __all__ = ['SequentialControlHook']
 class SequentialControlHook(Hook):
     """ """
 
-    def __init__(self, temporal_start_iter=-1):
+    def __init__(self, temporal_start_iter=-1, with_velo=True):
         super().__init__()
         self.temporal_start_iter = temporal_start_iter
         self.temporal = False
+        self.with_velo = with_velo
 
     def set_temporal_flag(self, runner, flag):
         if is_parallel(runner.model.module):
             runner.model.module.module.do_history = flag
-            if flag:
-                runner.model.module.module.pts_bbox_head.code_weights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-            else:
-                runner.model.module.module.pts_bbox_head.code_weights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.2, 0.2]
+            if self.with_velo:
+                if flag:
+                    runner.model.module.module.pts_bbox_head.code_weights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+                else:
+                    runner.model.module.module.pts_bbox_head.code_weights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.2, 0.2]
         else:
             runner.model.module.do_history = flag
-            if flag:
-                runner.model.module.pts_bbox_head.code_weights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-            else:
-                runner.model.module.pts_bbox_head.code_weights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.2, 0.2]
+            if self.with_velo:
+                if flag:
+                    runner.model.module.pts_bbox_head.code_weights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+                else:
+                    runner.model.module.pts_bbox_head.code_weights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.2, 0.2]
 
     def before_run(self, runner):
         self.set_temporal_flag(runner, False)
