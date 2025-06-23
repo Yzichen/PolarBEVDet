@@ -27,10 +27,10 @@ consistent performance improvement.
 ## Benchmark Results
 
 ### results on nuScenes valid set:
-| Setting  | Pretrain | NDS  | MAP  | Weights |
-|----------|:--------:|:----:|:----:|:-------:|
+| Setting  | Pretrain | NDS  | MAP  |                                     Weights                                      |
+|----------|:--------:|:----:|:----:|:--------------------------------------------------------------------------------:|
 | [r50_704x256_24e](projects/configs/polarbevdet/r50_704x256_24e.py) | [ImageNet]([ImageNet](https://download.pytorch.org/models/resnet50-0676ba61.pth))  | 53.0 | 43.2 | [gdrive](https://drive.google.com/file/d/1ft34-pxLpHGo2Aw-jowEtCxyXcqszHNn/view) |
-| [r50_704x256_60e](projects/configs/polarbevdet/r50_704x256_60e.py) | [ImageNet]([ImageNet](https://download.pytorch.org/models/resnet50-0676ba61.pth))  | 55.3 | 45.0 | [gdrive](https://drive.google.com/file/d/1C_Vn3iiSnSW1Dw1r0DkjJMwvHC5Y3zTN/view) |
+| [r50_704x256_60e](projects/configs/polarbevdet/r50_704x256_60e.py) | [ImageNet]([ImageNet](https://download.pytorch.org/models/resnet50-0676ba61.pth))  | 55.3 | 45.0 | [gdrive](https://drive.google.com/file/d/1L776m7csFlDS2LHxMz-1q2eQTyc1Y_V0/view) |
 | [r50_704x256_nuImg_60e](projects/configs/polarbevdet/r50_704x256_nuImg_60e.py) | [nuImg](https://download.openmmlab.com/mmdetection3d/v0.1.0_models/nuimages_semseg/cascade_mask_rcnn_r50_fpn_coco-20e_20e_nuim/cascade_mask_rcnn_r50_fpn_coco-20e_20e_nuim_20201009_124951-40963960.pth)  | 56.7 | 46.9 | [gdrive](https://drive.google.com/file/d/1dKu5cR1fuo-O0ynyBh-RCPtHrgut29mN/view) |
 
 ### results on Waymo valid set:
